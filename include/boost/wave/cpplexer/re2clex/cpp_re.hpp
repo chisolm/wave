@@ -13,6 +13,7 @@
 #if !defined(BOOST_CPP_RE_HPP_B76C4F5E_63E9_4B8A_9975_EC32FA6BF027_INCLUDED)
 #define BOOST_CPP_RE_HPP_B76C4F5E_63E9_4B8A_9975_EC32FA6BF027_INCLUDED
 
+#include <iostream>
 #include <boost/assert.hpp>
 
 #include <boost/wave/wave_config.hpp>
@@ -40,6 +41,7 @@
     {                                                                         \
         cursor = uchar_wrapper(fill(s, cursor), cursor.column);               \
         limit = uchar_wrapper (s->lim);                                       \
+        std::cout << "marker points to:               " << static_cast<void*>(marker) << std::endl;   \
     }                                                                         \
     /**/
 
@@ -177,6 +179,11 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
     {
         uchar* p;
         std::ptrdiff_t cnt = s->tok - s->bot;
+	std::cout << "count " << cnt << std::endl;
+        for (auto t = s->tok; t < s->lim; ++t)
+	    std::cout << t << " ";
+        std::cout << std::endl;
+        std::cout << "Old block pointers bot          " << static_cast<void*>(s->bot) << " " << static_cast<void*>(s->tok) << " " << static_cast<void*>(s->cur) << " " << static_cast<void*>(s->ptr) << " " << static_cast<void*>(s->lim) << std::endl;
         if(cnt)
         {
             if (NULL == s->lim)
@@ -191,6 +198,7 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
             s->lim -= cnt;
             adjust_eol_offsets(s, cnt);
         }
+        std::cout << "Old block adjusted pointers bot " << static_cast<void*>(s->bot) << " " << static_cast<void*>(s->tok) << " " << static_cast<void*>(s->cur) << " " << static_cast<void*>(s->ptr) << " " << static_cast<void*>(s->lim) << std::endl;
 
         if((s->top - s->lim) < BOOST_WAVE_BSIZE)
         {
@@ -214,9 +222,12 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
             cursor = &buf[cursor - s->bot];
             s->lim = &buf[s->lim - s->bot];
             s->top = &s->lim[BOOST_WAVE_BSIZE];
+
+        std::cout << "Freeing old block               " << static_cast<void*>(s->bot) << " " << static_cast<void*>(s->bot + BOOST_WAVE_BSIZE) << " " << static_cast<void*>(s->cur) << " " << static_cast<void*>(s->ptr) << " " << static_cast<void*>(s->lim) << std::endl;
             free(s->bot);
             s->bot = buf;
         }
+        std::cout << "New block adjusted pointers bot " << static_cast<void*>(s->bot) << " " << static_cast<void*>(s->tok) << " " << static_cast<void*>(s->cur) << " " << static_cast<void*>(s->ptr) << " " << static_cast<void*>(s->lim) << std::endl;
 
         cnt = std::distance(s->act, s->last);
         if (cnt > BOOST_WAVE_BSIZE)
